@@ -1,19 +1,10 @@
-der Hund,ο σκύλος
-wie hoch,πόσο ψηλά
-feiern,γιορτάζω
-schwer,βαρύς/δύσκολος
-stattfinden,γίνεται
-das Lebensmittel,τρόφιμο
-bekannt,γνωστός
-insgesamt,συνολικά
-die Sehenswürdigkeit,αξιοθέατο
-die Süßigkeit,γλυκό
-wissen,ξέρω
-die Welt,κόσμος
-das Geschäft,μαγαζί
-kennenlernen,γνωρίζω
-besonders,ιδιαιτέρως
-ändern,αλλάζω
-das Rezept,συνταγή
-der/die Verwandte,ο/η συγγενής
-der Urlaub,διακοπές
+das Frühstück, το πρωινό
+die Arbeit, η δουλειά
+der Termin, το ραντεβού (επαγγελματικό)
+die Kleidung, τα ρούχα
+das Handy, το κινητό
+der Schlüssel, το κλειδί
+das Geschenk, το δώρο
+die Erfahrung, η εμπειρία
+der Fehler, το λάθος
+die Lösung, η λύση
