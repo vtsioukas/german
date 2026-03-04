@@ -5,19 +5,40 @@ import pandas as pd
 # Ρύθμιση σελίδας
 st.set_page_config(page_title="Εκμάθηση Γερμανικών", layout="centered")
 
+# Sidebar για φόρτωση αρχείου
+st.sidebar.header("📁 Διαχείριση Λεξικού")
+uploaded_file = st.sidebar.file_uploader("Ανεβάστε νέο αρχείο lexiko.txt", type=["txt"])
+
+if uploaded_file is not None:
+    # Ανάγνωση και αποθήκευση του αρχείου
+    content = uploaded_file.getvalue().decode("utf-8")
+    with open("lexiko.txt", "w", encoding="utf-8") as f:
+        f.write(content)
+    st.sidebar.success("Το λεξικό ενημερώθηκε!")
+    # Καθαρισμός του κουίζ αν αλλάξει το αρχείο
+    if "current_question" in st.session_state:
+        del st.session_state.current_question
+    st.rerun()
+
 # Συνάρτηση για ανάγνωση του αρχείου
 def load_data():
     words = []
     try:
+        if not os.path.exists("lexiko.txt"):
+            with open("lexiko.txt", "w", encoding="utf-8") as f:
+                f.write("Γεια,Hallo") # Default content if missing
+        
         with open("lexiko.txt", "r", encoding="utf-8") as f:
             for line in f:
                 if "," in line:
-                    ger, gr = line.strip().split(",")
-                    words.append({"German": ger, "Greek": gr})
-    except FileNotFoundError:
-        st.error("Το αρχείο lexiko.txt δεν βρέθηκε!")
+                    parts = line.strip().split(",", 1)
+                    if len(parts) == 2:
+                        words.append({"German": parts[0].strip(), "Greek": parts[1].strip()})
+    except Exception as e:
+        st.error(f"Σφάλμα κατά την ανάγνωση του αρχείου: {e}")
     return words
 
+import os
 data = load_data()
 
 st.title("🇩🇪 Τα Γερμανικά μου")
