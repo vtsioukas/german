@@ -24,6 +24,17 @@ st.title("🇩🇪 Τα Γερμανικά μου")
 tab1, tab2, tab3 = st.tabs(["Ελληνικά -> Γερμανικά", "Γερμανικά -> Ελληνικά", "Τέστ Γνώσεων"])
 
 import requests
+import re
+
+# Συνάρτηση για μετάφραση με τη χρήση του MyMemory API (δωρεάν, χωρίς κλειδί)
+def translate_to_english(text):
+    url = "https://api.mymemory.translated.net/get"
+    params = {"q": text, "langpair": "de|en"}
+    try:
+        response = requests.get(url, params=params, timeout=3).json()
+        return response.get("responseData", {}).get("translatedText", text)
+    except Exception:
+        return text
 
 # ΚΑΡΤΕΛΑ 1: Ελληνικά -> Γερμανικά (Με Εικόνα)
 with tab1:
@@ -32,20 +43,49 @@ with tab1:
         with st.expander(f"Πώς λέμε: {item['Greek']};"):
             word = item['German']
             
-            # Αναζήτηση εικόνας μέσω Wikipedia API (γερμανική)
-            url = f"https://de.wikipedia.org/w/api.php?action=query&titles={word}&prop=pageimages&format=json&pithumbsize=400"
-            try:
-                response = requests.get(url, timeout=3).json()
-                pages = response.get("query", {}).get("pages", {})
-                page = list(pages.values())[0]
-                
-                if "thumbnail" in page:
-                    image_url = page["thumbnail"]["source"]
-                    st.image(image_url, caption=f"Εικόνα για: {word}")
-                else:
-                    st.info(f"Δεν βρέθηκε ακριβής εικόνα για: {word}")
-            except Exception:
-                st.info(f"Δεν βρέθηκε εικόνα για: {word}")
+            # Αφαιρούμε τα άρθρα για να βρει λέξη η Wikipedia (πχ "der Hund" -> "Hund")
+            search_word = re.sub(r'^(der|die|das|der/die)\s+', '', word, flags=re.IGNORECASE).strip()
+            
+            # Βοηθητική συνάρτηση για αναζήτηση εικόνας στην Wikipedia
+            def get_wiki_image(term, lang):
+                url = f"https://{lang}.wikipedia.org/w/api.php"
+                params = {
+                    "action": "query",
+                    "generator": "search",
+                    "gsrsearch": term,
+                    "prop": "pageimages",
+                    "format": "json",
+                    "pithumbsize": 400,
+                    "gsrlimit": 1
+                }
+                try:
+                    response = requests.get(url, params=params, headers={"User-Agent": "GermanLearnerApp/1.0"}, timeout=3).json()
+                    pages = response.get("query", {}).get("pages", {})
+                    if pages:
+                        page = list(pages.values())[0]
+                        if "thumbnail" in page:
+                            return page["thumbnail"]["source"]
+                except Exception:
+                    pass
+                return None
+            
+            # 1. Προσπάθεια στη Γερμανική Wikipedia
+            image_url = get_wiki_image(search_word, "de")
+            
+            # 2. Αν αποτύχει, μετάφραση στα Αγγλικά και προσπάθεια στην Αγγλική Wikipedia
+            if not image_url:
+                try:
+                    english_word = translate_to_english(search_word)
+                    if english_word and english_word != search_word:
+                        image_url = get_wiki_image(english_word, "en")
+                except Exception:
+                    pass
+            
+            # Προβολή αποτελέσματος
+            if image_url:
+                st.image(image_url, caption=f"Εικόνα για: {word}")
+            else:
+                st.info(f"Δεν βρέθηκε εικόνα για: {word} (ούτε στα Αγγλικά)")
                 
             st.write(f"### **{word}**")
 
